@@ -1,0 +1,76 @@
+name: Bug report
+description: Report a reproducible VoiceTyping problem
+title: "[Bug]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include API keys, recordings, transcripts, or other private data. Report security issues through the repository Security tab.
+
+  - type: input
+    id: version
+    attributes:
+      label: VoiceTyping version
+      placeholder: 1.0.4
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: Pixel 7, Android 14
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Use test data and remove private information.
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: dropdown
+    id: route
+    attributes:
+      label: Affected area
+      options:
+        - Setup or permissions
+        - Floating button
+        - Recording
+        - Transcription
+        - Clipboard or paste
+        - Build or tests
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials and private data from this report.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

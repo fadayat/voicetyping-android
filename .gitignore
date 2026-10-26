@@ -1,0 +1,28 @@
+*.iml
+.gradle/
+.idea/
+.kotlin/
+local.properties
+.DS_Store
+
+# Build output and captures
+build/
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
+dist/
+*.apk
+*.aab
+
+# Signing material and secrets
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+.env
+.env.*
+google-services.json
+
+# Local development handoff log
+PLAN.md

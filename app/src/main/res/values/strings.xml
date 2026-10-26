@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">VoiceTyping</string>
+    <string name="accessibility_service_name">VoiceTyping mətn yerləşdirmə xidməti</string>
+    <string name="accessibility_service_description">Yalnız VoiceTyping tərəfindən hazırlanmış mətni aktiv xanaya yerləşdirir. Daxil etdiyiniz mətni oxumur və saxlamır.</string>
+    <string name="notification_channel_name">VoiceTyping xidməti</string>
+    <string name="notification_channel_description">Üzən səsli yazı düyməsinin vəziyyəti</string>
+    <string name="notification_idle">Üzən düymə hazırdır</string>
+    <string name="notification_recording">Səs yazılır</string>
+    <string name="notification_processing">Mətn hazırlanır</string>
+    <string name="notification_copied">Mətn clipboard-a kopyalandı</string>
+    <string name="notification_error">VoiceTyping xətası</string>
+    <string name="orb_start">Səsli yazmanı başlat</string>
+    <string name="orb_stop">Səsli yazmanı dayandır</string>
+    <string name="orb_processing">Mətn hazırlanır</string>
+    <string name="orb_dismiss_target">VoiceTyping-i bağla</string>
+</resources>
