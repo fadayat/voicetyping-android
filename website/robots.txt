@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://voicetyping-android.vercel.app/sitemap.xml

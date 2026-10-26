@@ -2,6 +2,7 @@
 .gradle/
 .idea/
 .kotlin/
+.vercel/
 local.properties
 .DS_Store
 

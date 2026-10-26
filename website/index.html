@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VoiceTyping | Speak here. Type anywhere.</title>
+    <meta
+      name="description"
+      content="A floating Android voice button that turns speech into text inside the field you already use. Open source and Azerbaijani-first."
+    >
+    <meta name="theme-color" content="#f5f8ff">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="VoiceTyping | Speak here. Type anywhere.">
+    <meta
+      property="og:description"
+      content="System-wide Android voice typing that keeps your keyboard and works in the text field you already use."
+    >
+    <meta property="og:image" content="/assets/og-card.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="#top" aria-label="VoiceTyping home">
+          <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="21" fill="#3264c8"></circle>
+            <circle cx="24" cy="19" r="8" fill="none" stroke="white" stroke-width="3"></circle>
+            <path d="M13 25c0 7 4.9 11 11 11s11-4 11-11M24 36v7M17 43h14" fill="none" stroke="white" stroke-linecap="round" stroke-width="3"></path>
+          </svg>
+          <span>VoiceTyping</span>
+        </a>
+
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="primary-nav">
+          <span class="sr-only">Open navigation</span>
+          <span></span><span></span>
+        </button>
+
+        <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation">
+          <a href="#product">Product</a>
+          <a href="#privacy">Privacy</a>
+          <a href="#roadmap">Roadmap</a>
+          <a href="https://github.com/fadayat/voicetyping-android">GitHub</a>
+        </nav>
+
+        <a class="header-cta" href="https://github.com/fadayat/voicetyping-android/releases/latest">
+          Download Android
+        </a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section id="top" class="hero shell">
+        <div class="hero-copy">
+          <p class="availability"><span></span> Android beta · Azerbaijani available now</p>
+          <h1>Speak here.<br>Type anywhere.</h1>
+          <p class="hero-lede">
+            VoiceTyping adds a floating voice button to Android. Tap it, speak, and your words land in the text field you already use.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/fadayat/voicetyping-android/releases/latest">
+              Download the Android beta
+            </a>
+            <a class="button button-secondary" href="https://github.com/fadayat/voicetyping-android">
+              View the source
+            </a>
+          </div>
+          <ul class="hero-notes" aria-label="Product requirements">
+            <li>Android 8+</li>
+            <li>Bring your own Gemini API key</li>
+            <li>Apache 2.0</li>
+          </ul>
+        </div>
+
+        <div class="demo-stage" aria-label="Interactive VoiceTyping preview">
+          <div class="signal-ring signal-ring-one" aria-hidden="true"></div>
+          <div class="signal-ring signal-ring-two" aria-hidden="true"></div>
+          <div class="phone">
+            <div class="phone-top" aria-hidden="true">
+              <span>9:41</span>
+              <span class="phone-sensors">● ◒</span>
+            </div>
+            <div class="conversation">
+              <p class="conversation-label">New message</p>
+              <div class="message-bubble">Are we still meeting tomorrow?</div>
+              <div class="composer" aria-live="polite">
+                <span id="demo-text">Tap the orb to preview VoiceTyping.</span>
+                <span class="cursor" aria-hidden="true"></span>
+              </div>
+            </div>
+            <button id="voice-demo" class="voice-orb" type="button" aria-label="Start interactive voice typing preview">
+              <svg viewBox="0 0 64 64" aria-hidden="true">
+                <circle cx="32" cy="25" r="11"></circle>
+                <path d="M17 32c0 9.5 6.7 15 15 15s15-5.5 15-15M32 47v9M23 56h18"></path>
+              </svg>
+              <span class="orb-pulse" aria-hidden="true"></span>
+            </button>
+            <p id="demo-status" class="demo-status" aria-live="polite">Ready</p>
+          </div>
+          <p class="preview-note">Interactive preview only. This page never requests microphone access.</p>
+        </div>
+      </section>
+
+      <section id="product" class="product-intro">
+        <div class="shell product-grid">
+          <div class="section-copy">
+            <p class="section-kicker">Stay in the field</p>
+            <h2>Your keyboard stays exactly where it is.</h2>
+            <p>
+              Keep Gboard or the keyboard you already know. VoiceTyping floats above your apps and returns the transcript to the focused field.
+            </p>
+          </div>
+
+          <div class="feature-ledger">
+            <article>
+              <span class="feature-icon" aria-hidden="true">⌁</span>
+              <div>
+                <h3>Start speaking immediately</h3>
+                <p>Recording begins while the live connection opens. Early audio waits in memory and sends as soon as the service is ready.</p>
+              </div>
+            </article>
+            <article>
+              <span class="feature-icon" aria-hidden="true">⌨</span>
+              <div>
+                <h3>Write in the app you opened</h3>
+                <p>The finished transcript goes to the focused editable field. Clipboard fallback covers apps that block direct paste.</p>
+              </div>
+            </article>
+            <article>
+              <span class="feature-icon" aria-hidden="true">×</span>
+              <div>
+                <h3>Leave with one gesture</h3>
+                <p>Move the orb anywhere. Drag it onto the large bottom close target to stop the service and remove its notification.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="showcase shell" aria-labelledby="showcase-title">
+        <div class="showcase-copy">
+          <p class="section-kicker">The actual Android build</p>
+          <h2 id="showcase-title">Three steps, then the orb is ready.</h2>
+          <ol class="setup-steps">
+            <li><span>1</span>Save your Gemini API key on the device.</li>
+            <li><span>2</span>Grant microphone, overlay, and paste permissions.</li>
+            <li><span>3</span>Start the floating button and return to your apps.</li>
+          </ol>
+          <p class="small-copy">The current app interface is in Azerbaijani. Product and interface localization are part of the global roadmap.</p>
+        </div>
+
+        <div class="screens" aria-label="VoiceTyping Android screenshots">
+          <figure class="screen screen-back">
+            <img src="/assets/setup-screen.png" alt="VoiceTyping Android setup screen" width="1080" height="2280" loading="lazy">
+          </figure>
+          <figure class="screen screen-front">
+            <img src="/assets/drag-to-close.png" alt="VoiceTyping floating orb and close target" width="1080" height="2280" loading="lazy">
+          </figure>
+        </div>
+      </section>
+
+      <section class="speed-section">
+        <div class="shell speed-grid">
+          <div>
+            <p class="section-kicker section-kicker-light">Measured, not promised</p>
+            <h2>The text arrived 731 ms after recording stopped.</h2>
+          </div>
+          <div class="measurement">
+            <div><strong>5.28 s</strong><span>synthetic Azerbaijani audio</span></div>
+            <div><strong>5.998 s</strong><span>full live-route run</span></div>
+            <p>Controlled development test on the verified v1.0.4 live path. Network and service conditions change, so this is not a latency guarantee.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="privacy" class="privacy shell">
+        <div class="privacy-title">
+          <div class="key-visual" aria-hidden="true">
+            <span></span>
+            <svg viewBox="0 0 80 80"><path d="M31 45a18 18 0 1 1 12-12l27 27-9 9-6-6-6 6-8-8 6-6-4-4A18 18 0 0 1 31 45Z"></path></svg>
+          </div>
+          <div>
+            <p class="section-kicker">A narrow privacy boundary</p>
+            <h2>Your key stays yours.</h2>
+          </div>
+        </div>
+        <div class="privacy-points">
+          <article>
+            <h3>Encrypted on the device</h3>
+            <p>Your Gemini API key is protected with AES-GCM and a non-exportable Android Keystore key.</p>
+          </article>
+          <article>
+            <h3>Session memory only</h3>
+            <p>Audio supports the active live session and fallback. VoiceTyping does not write recordings or transcript history to disk.</p>
+          </article>
+          <article>
+            <h3>Focused paste only</h3>
+            <p>The accessibility service invokes paste for the active editable field. Password fields are excluded.</p>
+          </article>
+        </div>
+        <a class="text-link" href="https://github.com/fadayat/voicetyping-android/blob/main/PRIVACY.md">Read the privacy details</a>
+      </section>
+
+      <section id="roadmap" class="roadmap shell">
+        <div class="roadmap-heading">
+          <p class="section-kicker">Language roadmap</p>
+          <h2>Azerbaijani first.<br>More languages next.</h2>
+        </div>
+        <div class="roadmap-copy">
+          <p>
+            The current beta is tuned for <strong>az-AZ</strong>. The transcription layer already accepts a language code, giving the project a clean path toward more languages and localized onboarding.
+          </p>
+          <div class="roadmap-track" aria-label="VoiceTyping product roadmap">
+            <div class="roadmap-item current">
+              <span>Available</span>
+              <h3>Azerbaijani Android beta</h3>
+              <p>Live transcription, batch fallback, overlay control, and safe paste.</p>
+            </div>
+            <div class="roadmap-item">
+              <span>Next</span>
+              <h3>Language selection and localized UI</h3>
+              <p>Language expansion will ship after quality testing for each supported language.</p>
+            </div>
+            <div class="roadmap-item">
+              <span>Later</span>
+              <h3>Release-grade distribution</h3>
+              <p>Signing, store policy work, broader device coverage, and production onboarding.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="open-source">
+        <div class="shell open-source-inner">
+          <div>
+            <p class="section-kicker section-kicker-light">Open by default</p>
+            <h2>Inspect the code before you install it.</h2>
+            <p>VoiceTyping is licensed under Apache 2.0. The repository includes the Android source, tests, privacy notes, security policy, and release checksums.</p>
+          </div>
+          <div class="source-actions">
+            <a class="button button-white" href="https://github.com/fadayat/voicetyping-android">Open the GitHub repository</a>
+            <a class="source-secondary" href="https://github.com/fadayat/voicetyping-android/blob/main/CONTRIBUTING.md">Read the contribution guide</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq shell" aria-labelledby="faq-title">
+        <div>
+          <p class="section-kicker">Details before installing</p>
+          <h2 id="faq-title">Common questions</h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>Does VoiceTyping replace my keyboard?</summary>
+            <p>It keeps your current keyboard. The floating orb starts and stops voice capture while you stay inside the app and field you selected.</p>
+          </details>
+          <details>
+            <summary>Why does it use an accessibility service?</summary>
+            <p>Android uses that service to invoke the standard paste action in the focused editable field. VoiceTyping does not subscribe to accessibility events or store field contents.</p>
+          </details>
+          <details>
+            <summary>Which languages are supported?</summary>
+            <p>The current beta is configured for Azerbaijani. More languages are planned, but they will only be listed as supported after testing.</p>
+          </details>
+          <details>
+            <summary>What does it cost?</summary>
+            <p>The app is open source. Transcription requests use your Gemini API key, so Google quota, pricing, and terms apply to your account.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="final-cta shell">
+        <div>
+          <p class="availability"><span></span> v1.0.4 available now</p>
+          <h2>Put voice typing one tap away.</h2>
+        </div>
+        <div>
+          <a class="button button-primary" href="https://github.com/fadayat/voicetyping-android/releases/latest">Download the Android beta</a>
+          <p>Debug APK for sideloading and evaluation.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <a class="brand brand-footer" href="#top">
+          <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="21" fill="#3264c8"></circle>
+            <circle cx="24" cy="19" r="8" fill="none" stroke="white" stroke-width="3"></circle>
+            <path d="M13 25c0 7 4.9 11 11 11s11-4 11-11M24 36v7M17 43h14" fill="none" stroke="white" stroke-linecap="round" stroke-width="3"></path>
+          </svg>
+          <span>VoiceTyping</span>
+        </a>
+        <p>Open-source voice typing for Android.</p>
+        <div class="footer-links">
+          <a href="https://github.com/fadayat/voicetyping-android">GitHub</a>
+          <a href="https://github.com/fadayat/voicetyping-android/releases">Releases</a>
+          <a href="https://github.com/fadayat/voicetyping-android/security">Security</a>
+        </div>
+        <p class="copyright">© <span id="year">2026</span> VoiceTyping contributors</p>
+      </div>
+    </footer>
+  </body>
+</html>
