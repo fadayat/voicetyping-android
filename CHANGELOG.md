@@ -2,6 +2,14 @@
 
 All notable changes are documented here. This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.0.2] - 2026-10-27
+
+### Changed
+
+- Accepted finalized post-stop Live transcripts after a 250 ms settle window instead of waiting up to 3 seconds for a missing `turnComplete` signal.
+- Kept the existing 3-second protection and batch fallback when no finalized transcript arrives.
+- Continued to keep interim/live transcript text out of the UI.
+
 ## [2.0.1] - 2026-10-27
 
 ### Changed

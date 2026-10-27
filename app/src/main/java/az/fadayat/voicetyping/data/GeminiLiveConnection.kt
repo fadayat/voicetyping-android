@@ -5,6 +5,7 @@ import java.net.SocketTimeoutException
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.HttpUrl
@@ -29,11 +30,13 @@ internal class GeminiLiveConnection(
     private val endpoint: HttpUrl = DEFAULT_ENDPOINT,
     private val connectTimeoutMs: Long = CONNECT_TIMEOUT_MS,
     private val finalizeTimeoutMs: Long = FINALIZE_TIMEOUT_MS,
+    private val transcriptSettleMs: Long = TRANSCRIPT_SETTLE_MS,
 ) : LiveTranscriptionConnection {
     private val opened = CompletableDeferred<Unit>()
     private val configured = CompletableDeferred<Unit>()
     private val completed = CompletableDeferred<String>()
     private val failed = CompletableDeferred<Throwable>()
+    private val postEndTranscriptUpdates = Channel<Unit>(Channel.CONFLATED)
     private val transcript = StringBuilder()
     private val activityEnded = AtomicBoolean(false)
     private var webSocket: WebSocket? = null
@@ -72,12 +75,7 @@ internal class GeminiLiveConnection(
         check(send(realtimeMessage("activityEnd", JSONObject()))) {
             "Could not finish Live activity"
         }
-        val finalized = withTimeoutOrNull(finalizeTimeoutMs) {
-            select {
-                completed.onAwait { it.trim() }
-                failed.onAwait { throw it }
-            }
-        }
+        val finalized = awaitFinalTranscript()
         if (finalized != null) return finalized
 
         val committedTranscript = synchronized(transcript) { transcript.toString().trim() }
@@ -91,6 +89,38 @@ internal class GeminiLiveConnection(
     }
 
     private fun send(payload: JSONObject): Boolean = webSocket?.send(payload.toString()) == true
+
+    private suspend fun awaitFinalTranscript(): String? {
+        val deadlineNanos = System.nanoTime() + finalizeTimeoutMs * NANOS_PER_MILLISECOND
+        var receivedPostEndTranscript = false
+        while (true) {
+            val remainingMs = ((deadlineNanos - System.nanoTime()) / NANOS_PER_MILLISECOND)
+                .coerceAtLeast(0L)
+            if (remainingMs == 0L) return null
+            val waitMs = if (receivedPostEndTranscript) {
+                minOf(remainingMs, transcriptSettleMs)
+            } else {
+                remainingMs
+            }
+            val event = withTimeoutOrNull(waitMs.coerceAtLeast(1L)) {
+                select<FinalizationEvent> {
+                    completed.onAwait { FinalizationEvent.Completed(it.trim()) }
+                    failed.onAwait { throw it }
+                    postEndTranscriptUpdates.onReceive { FinalizationEvent.TranscriptUpdate }
+                }
+            }
+            when (event) {
+                is FinalizationEvent.Completed -> return event.text
+                FinalizationEvent.TranscriptUpdate -> receivedPostEndTranscript = true
+                null -> {
+                    if (receivedPostEndTranscript) {
+                        return synchronized(transcript) { transcript.toString().trim() }
+                    }
+                    return null
+                }
+            }
+        }
+    }
 
     private fun setupMessage(languageCode: String): JSONObject {
         val languageCodes = JSONArray().put(languageCode)
@@ -151,6 +181,7 @@ internal class GeminiLiveConnection(
             LiveMessageParser.Event.SetupComplete -> configured.complete(Unit)
             is LiveMessageParser.Event.Transcript -> synchronized(transcript) {
                 transcript.append(event.text)
+                if (activityEnded.get()) postEndTranscriptUpdates.trySend(Unit)
             }
             LiveMessageParser.Event.TurnComplete -> {
                 if (!activityEnded.get()) {
@@ -176,10 +207,17 @@ internal class GeminiLiveConnection(
         private const val API_KEY_HEADER = "x-goog-api-key"
         private const val CONNECT_TIMEOUT_MS = 3_000L
         private const val FINALIZE_TIMEOUT_MS = 3_000L
+        private const val TRANSCRIPT_SETTLE_MS = 250L
+        private const val NANOS_PER_MILLISECOND = 1_000_000L
         private val DEFAULT_ENDPOINT = HttpUrl.Builder()
             .scheme("https")
             .host("generativelanguage.googleapis.com")
             .addPathSegments("ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent")
             .build()
+    }
+
+    private sealed interface FinalizationEvent {
+        data class Completed(val text: String) : FinalizationEvent
+        data object TranscriptUpdate : FinalizationEvent
     }
 }

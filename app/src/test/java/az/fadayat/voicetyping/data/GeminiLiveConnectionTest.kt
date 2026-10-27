@@ -116,7 +116,11 @@ class GeminiLiveConnectionTest {
                             root.has("setup") -> webSocket.send("{\"setupComplete\":{}}".encodeUtf8())
                             root.optJSONObject("realtime_input")?.has("activityEnd") == true -> {
                                 webSocket.send(
-                                    """{"serverContent":{"inputTranscription":{"text":"Hazır mətn"}}}""".encodeUtf8(),
+                                    """{"serverContent":{"inputTranscription":{"text":"Hazır "}}}""".encodeUtf8(),
+                                )
+                                Thread.sleep(10L)
+                                webSocket.send(
+                                    """{"serverContent":{"inputTranscription":{"text":"mətn"}}}""".encodeUtf8(),
                                 )
                             }
                         }
@@ -133,14 +137,18 @@ class GeminiLiveConnectionTest {
         val connection = GeminiLiveConnection(
             client = client,
             endpoint = server.url("/live"),
-            finalizeTimeoutMs = 100L,
+            finalizeTimeoutMs = 2_000L,
+            transcriptSettleMs = 25L,
         )
 
         connection.connect("test-key-with-safe-length", "az-AZ")
         assertTrue(connection.startActivity())
         connection.sendAudio(byteArrayOf(1, 2, 3, 4))
 
+        val startedAtNanos = System.nanoTime()
         assertEquals("Hazır mətn", connection.finish())
+        val elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAtNanos)
+        assertTrue("Final transcript should not wait for turnComplete timeout", elapsedMillis < 500L)
         connection.close()
         client.dispatcher.executorService.shutdown()
         client.connectionPool.evictAll()
