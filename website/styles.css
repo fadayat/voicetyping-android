@@ -395,7 +395,7 @@ h3 {
 .conversation {
   display: flex;
   flex-direction: column;
-  min-height: 420px;
+  min-height: 375px;
   padding: 22px 4px 0;
   border-top: 1px solid #d8e1f2;
 }
@@ -450,49 +450,55 @@ h3 {
   50% { opacity: 0; }
 }
 
-.voice-orb {
-  position: absolute;
-  right: 12px;
-  bottom: 78px;
-  z-index: 3;
+.keyboard-preview {
   display: grid;
-  width: 78px;
-  height: 78px;
-  padding: 0;
+  padding: 12px 4px 0;
+  gap: 8px;
+  border-top: 1px solid #d8e1f2;
+}
+
+.voice-keyboard-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 58px;
+  padding: 0 22px;
+  gap: 10px;
   color: var(--white);
   cursor: pointer;
   background: var(--blue);
-  border: 4px solid white;
-  border-radius: 50%;
-  box-shadow: 0 12px 30px rgba(24, 57, 126, 0.32);
-  place-items: center;
+  border: 0;
+  border-radius: 17px;
+  box-shadow: 0 8px 22px rgba(24, 57, 126, 0.24);
+  font: 700 14px/1 var(--font-body);
 }
 
-.voice-orb svg {
+.voice-keyboard-button svg {
   position: relative;
   z-index: 2;
-  width: 44px;
-  height: 44px;
+  width: 29px;
+  height: 29px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-width: 3.2;
 }
 
-.orb-pulse {
+.button-pulse {
   position: absolute;
-  inset: -8px;
+  inset: -5px;
   z-index: 1;
   border: 2px solid rgba(50, 100, 200, 0.48);
-  border-radius: 50%;
+  border-radius: 21px;
   opacity: 0;
 }
 
-.phone.is-listening .voice-orb {
+.phone.is-listening .voice-keyboard-button {
   background: #d84e54;
 }
 
-.phone.is-listening .orb-pulse {
+.phone.is-listening .button-pulse {
   opacity: 1;
   animation: pulse 1.1s ease-out infinite;
 }
@@ -503,13 +509,11 @@ h3 {
 }
 
 .demo-status {
-  position: absolute;
-  right: 34px;
-  bottom: 43px;
   margin: 0;
   color: var(--blue-dark);
   font-size: 11px;
   font-weight: 700;
+  text-align: center;
 }
 
 .signal-ring {
@@ -663,12 +667,12 @@ h3 {
 }
 
 .screens {
-  position: relative;
+  display: grid;
   min-height: 710px;
+  place-items: center;
 }
 
 .screen {
-  position: absolute;
   width: 295px;
   padding: 9px;
   margin: 0;
@@ -683,17 +687,8 @@ h3 {
   border-radius: 26px;
 }
 
-.screen-back {
-  top: 0;
-  left: 4%;
-  transform: rotate(-5deg);
-}
-
-.screen-front {
-  right: 2%;
-  bottom: 0;
-  z-index: 2;
-  transform: rotate(4deg);
+.screen-current {
+  transform: rotate(2deg);
 }
 
 .speed-section {
@@ -1264,14 +1259,8 @@ h3 {
     width: 230px;
   }
 
-  .screen-back {
-    left: 0;
-    transform: rotate(-2deg);
-  }
-
-  .screen-front {
-    right: 0;
-    transform: rotate(2deg);
+  .screen-current {
+    transform: rotate(1deg);
   }
 
   .measurement {

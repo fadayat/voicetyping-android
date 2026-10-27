@@ -22,8 +22,8 @@ body:
   - type: textarea
     id: privacy
     attributes:
-      label: Privacy and accessibility impact
-      description: Explain whether the idea changes audio, transcript, credential, network, or accessibility handling.
+      label: Privacy and platform-access impact
+      description: Explain whether the idea changes audio, transcript, credential, network, input-method, or other platform access.
     validations:
       required: true
 

@@ -2,6 +2,8 @@
 
 [Əsas README](../README.md)
 
+[Ən son Android beta APK-sını endir](https://github.com/fadayat/voicetyping-android/releases/latest). Cari buraxılış v2.0.2-dir və test üçün debug imzalıdır.
+
 VoiceTyping Android üçün ayrıca səsli klaviaturadır. Gboard silinmir və aktiv qalır. Danışıq bitəndə VoiceTyping mətni birbaşa xanaya yazır, sonra əvvəlki klaviaturaya qayıdır.
 
 ## İlkin sazlama

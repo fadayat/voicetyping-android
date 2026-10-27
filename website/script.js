@@ -54,7 +54,7 @@ if (demoButton && demoPhone && demoText && demoStatus) {
 
     demoTimers.push(window.setTimeout(() => {
       demoButton.setAttribute("aria-label", "Replay interactive voice typing preview");
-      setDemoState("", "Sabah saat onda görüşək.", "Pasted");
+      setDemoState("", "Sabah saat onda görüşək.", "Inserted");
     }, 2300));
   });
 }

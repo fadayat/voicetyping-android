@@ -6,7 +6,7 @@
     <title>VoiceTyping | Speak here. Type anywhere.</title>
     <meta
       name="description"
-      content="A floating Android voice button that turns speech into text inside the field you already use. Open source and Azerbaijani-first."
+      content="A secure Android voice keyboard that types Azerbaijani speech into the field you already use, then returns to Gboard."
     >
     <meta name="theme-color" content="#f5f8ff">
     <meta property="og:type" content="website">
@@ -65,7 +65,7 @@
           <p class="availability"><span></span> Android beta · Azerbaijani available now</p>
           <h1>Speak here.<br>Type anywhere.</h1>
           <p class="hero-lede">
-            VoiceTyping adds a floating voice button to Android. Tap it, speak, and your words land in the text field you already use.
+            VoiceTyping is a focused voice keyboard for Android. Select it, tap Speak, and it types the result directly into your active text field.
           </p>
           <div class="hero-actions">
             <a class="button button-primary" href="https://github.com/fadayat/voicetyping-android/releases/latest">
@@ -94,18 +94,21 @@
               <p class="conversation-label">New message</p>
               <div class="message-bubble">Are we still meeting tomorrow?</div>
               <div class="composer" aria-live="polite">
-                <span id="demo-text">Tap the orb to preview VoiceTyping.</span>
+                <span id="demo-text">Tap Speak to preview VoiceTyping.</span>
                 <span class="cursor" aria-hidden="true"></span>
               </div>
             </div>
-            <button id="voice-demo" class="voice-orb" type="button" aria-label="Start interactive voice typing preview">
-              <svg viewBox="0 0 64 64" aria-hidden="true">
-                <circle cx="32" cy="25" r="11"></circle>
-                <path d="M17 32c0 9.5 6.7 15 15 15s15-5.5 15-15M32 47v9M23 56h18"></path>
-              </svg>
-              <span class="orb-pulse" aria-hidden="true"></span>
-            </button>
-            <p id="demo-status" class="demo-status" aria-live="polite">Ready</p>
+            <div class="keyboard-preview">
+              <p id="demo-status" class="demo-status" aria-live="polite">Ready</p>
+              <button id="voice-demo" class="voice-keyboard-button" type="button" aria-label="Start interactive voice typing preview">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <circle cx="32" cy="25" r="11"></circle>
+                  <path d="M17 32c0 9.5 6.7 15 15 15s15-5.5 15-15M32 47v9M23 56h18"></path>
+                </svg>
+                <span>Speak</span>
+                <span class="button-pulse" aria-hidden="true"></span>
+              </button>
+            </div>
           </div>
           <p class="preview-note">Interactive preview only. This page never requests microphone access.</p>
         </div>
@@ -115,9 +118,9 @@
         <div class="shell product-grid">
           <div class="section-copy">
             <p class="section-kicker">Stay in the field</p>
-            <h2>Your keyboard stays exactly where it is.</h2>
+            <h2>Gboard stays installed and one tap away.</h2>
             <p>
-              Keep Gboard or the keyboard you already know. VoiceTyping floats above your apps and returns the transcript to the focused field.
+              Keep Gboard installed and enabled. Select VoiceTyping only when you want to dictate; it returns to your previous keyboard after inserting the transcript.
             </p>
           </div>
 
@@ -133,14 +136,14 @@
               <span class="feature-icon" aria-hidden="true">⌨</span>
               <div>
                 <h3>Write in the app you opened</h3>
-                <p>The finished transcript goes to the focused editable field. Clipboard fallback covers apps that block direct paste.</p>
+                <p>The finished transcript goes directly to the focused editable field through Android's standard input-method API.</p>
               </div>
             </article>
             <article>
               <span class="feature-icon" aria-hidden="true">×</span>
               <div>
-                <h3>Leave with one gesture</h3>
-                <p>Move the orb anywhere. Drag it onto the large bottom close target to stop the service and remove its notification.</p>
+                <h3>Return to Gboard quickly</h3>
+                <p>VoiceTyping switches back after a successful transcription. A dedicated button also opens Android's keyboard picker.</p>
               </div>
             </article>
           </div>
@@ -150,21 +153,18 @@
       <section class="showcase shell" aria-labelledby="showcase-title">
         <div class="showcase-copy">
           <p class="section-kicker">The actual Android build</p>
-          <h2 id="showcase-title">Three steps, then the orb is ready.</h2>
+          <h2 id="showcase-title">Three steps, then the voice keyboard is ready.</h2>
           <ol class="setup-steps">
             <li><span>1</span>Save your Gemini API key on the device.</li>
-            <li><span>2</span>Grant microphone, overlay, and paste permissions.</li>
-            <li><span>3</span>Start the floating button and return to your apps.</li>
+            <li><span>2</span>Grant microphone permission and enable the VoiceTyping keyboard.</li>
+            <li><span>3</span>Select VoiceTyping in a text field, then tap Speak.</li>
           </ol>
           <p class="small-copy">The current app interface is in Azerbaijani. Product and interface localization are part of the global roadmap.</p>
         </div>
 
         <div class="screens" aria-label="VoiceTyping Android screenshots">
-          <figure class="screen screen-back">
-            <img src="/assets/setup-screen.png" alt="VoiceTyping Android setup screen" width="1080" height="2280" loading="lazy">
-          </figure>
-          <figure class="screen screen-front">
-            <img src="/assets/drag-to-close.png" alt="VoiceTyping floating orb and close target" width="1080" height="2280" loading="lazy">
+          <figure class="screen screen-current">
+            <img src="/assets/voice-keyboard.png" alt="VoiceTyping keyboard blocking voice input in a password field" width="1080" height="2280" loading="lazy">
           </figure>
         </div>
       </section>
@@ -172,13 +172,13 @@
       <section class="speed-section">
         <div class="shell speed-grid">
           <div>
-            <p class="section-kicker section-kicker-light">Measured, not promised</p>
-            <h2>The text arrived 731 ms after recording stopped.</h2>
+            <p class="section-kicker section-kicker-light">A shorter fast path</p>
+            <h2>The connection starts preparing before you tap Speak.</h2>
           </div>
           <div class="measurement">
-            <div><strong>5.28 s</strong><span>synthetic Azerbaijani audio</span></div>
-            <div><strong>5.998 s</strong><span>full live-route run</span></div>
-            <p>Controlled development test on the verified v1.0.4 live path. Network and service conditions change, so this is not a latency guarantee.</p>
+            <div><strong>50 ms</strong><span>streaming audio chunks</span></div>
+            <div><strong>250 ms</strong><span>final transcript settle window</span></div>
+            <p>If Live returns no finalized transcript, a bounded three-second wait leads to batch fallback. Network and service conditions still affect total latency.</p>
           </div>
         </div>
       </section>
@@ -204,8 +204,8 @@
             <p>Audio supports the active live session and fallback. VoiceTyping does not write recordings or transcript history to disk.</p>
           </article>
           <article>
-            <h3>Focused paste only</h3>
-            <p>The accessibility service invokes paste for the active editable field. Password fields are excluded.</p>
+            <h3>Focused insertion only</h3>
+            <p>The standard input-method API inserts only the finished transcript. Recording and insertion are blocked in password fields.</p>
           </article>
         </div>
         <a class="text-link" href="https://github.com/fadayat/voicetyping-android/blob/main/PRIVACY.md">Read the privacy details</a>
@@ -224,7 +224,7 @@
             <div class="roadmap-item current">
               <span>Available</span>
               <h3>Azerbaijani Android beta</h3>
-              <p>Live transcription, batch fallback, overlay control, and safe paste.</p>
+              <p>Voice keyboard, Live transcription, batch fallback, direct insertion, and Gboard return.</p>
             </div>
             <div class="roadmap-item">
               <span>Next</span>
@@ -262,11 +262,11 @@
         <div class="faq-list">
           <details>
             <summary>Does VoiceTyping replace my keyboard?</summary>
-            <p>It keeps your current keyboard. The floating orb starts and stops voice capture while you stay inside the app and field you selected.</p>
+            <p>No. Gboard remains installed and enabled. VoiceTyping is selected temporarily and returns to the previous keyboard after a successful transcription.</p>
           </details>
           <details>
-            <summary>Why does it use an accessibility service?</summary>
-            <p>Android uses that service to invoke the standard paste action in the focused editable field. VoiceTyping does not subscribe to accessibility events or store field contents.</p>
+            <summary>Why is VoiceTyping a separate keyboard?</summary>
+            <p>Android's standard input-method API can insert the final transcript without Accessibility, display-over-other-apps, or clipboard access.</p>
           </details>
           <details>
             <summary>Which languages are supported?</summary>
@@ -281,7 +281,7 @@
 
       <section class="final-cta shell">
         <div>
-          <p class="availability"><span></span> v1.0.4 available now</p>
+          <p class="availability"><span></span> v2.0.2 available now</p>
           <h2>Put voice typing one tap away.</h2>
         </div>
         <div>

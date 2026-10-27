@@ -11,5 +11,5 @@ Describe the problem and the focused change.
 ## Privacy and security
 
 - [ ] No credentials, recordings, transcripts, device identifiers, or private data are included.
-- [ ] The change does not broaden accessibility data collection.
+- [ ] The change does not add Accessibility, overlay, clipboard, or editor-reading access.
 - [ ] Any change to audio, transcript, credential, or network handling is explained above.
