@@ -11,6 +11,7 @@ import java.net.SocketTimeoutException
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
@@ -34,6 +35,18 @@ class GeminiTranscriptionRepository @Inject constructor(
     internal var liveConnectionFactory: () -> LiveTranscriptionConnection = {
         GeminiLiveConnection(client)
     }
+    private val preconnectLock = Any()
+    private var preparedLive: PreparedLive? = null
+    private var liveWarmup: LiveWarmup? = null
+
+    override suspend fun prepare(apiKey: String, languageCode: String): Boolean =
+        withContext(ioDispatcher) {
+            when (val action = prepareAction(apiKey, languageCode)) {
+                PrepareAction.Ready -> true
+                is PrepareAction.Await -> action.warmup.ready.await()
+                is PrepareAction.Start -> startWarmup(action)
+            }
+        }
 
     override suspend fun transcribe(
         apiKey: String,
@@ -52,7 +65,6 @@ class GeminiTranscriptionRepository @Inject constructor(
     ): TranscriptionResult = coroutineScope {
         val recording = ByteArrayOutputStream()
         val queuedAudio = Channel<ByteArray>(Channel.UNLIMITED)
-        val live = liveConnectionFactory()
 
         launch(start = CoroutineStart.UNDISPATCHED) {
             try {
@@ -67,9 +79,33 @@ class GeminiTranscriptionRepository @Inject constructor(
             }
         }
 
+        val acquisition = acquirePrepared(apiKey, languageCode)
+        var live: LiveTranscriptionConnection? = when (acquisition) {
+            is PreparedAcquisition.Ready -> acquisition.connection
+            PreparedAcquisition.NoWarmup -> liveConnectionFactory()
+            PreparedAcquisition.WarmupFailed -> null
+        }
+        val usedPreparedConnection = acquisition is PreparedAcquisition.Ready
+
         try {
-            var liveAvailable = try {
-                live.connect(apiKey, languageCode)
+            var liveAvailable = if (acquisition is PreparedAcquisition.WarmupFailed) {
+                false
+            } else try {
+                var activeLive = checkNotNull(live)
+                if (!usedPreparedConnection) {
+                    activeLive.connect(apiKey, languageCode)
+                }
+                var activityStarted = activeLive.startActivity()
+                if (!activityStarted && usedPreparedConnection) {
+                    activeLive.close()
+                    activeLive = liveConnectionFactory()
+                    live = activeLive
+                    activeLive.connect(apiKey, languageCode)
+                    activityStarted = activeLive.startActivity()
+                }
+                check(activityStarted) {
+                    "Could not start Live activity"
+                }
                 true
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -78,7 +114,7 @@ class GeminiTranscriptionRepository @Inject constructor(
             }
 
             for (chunk in queuedAudio) {
-                if (liveAvailable && !live.sendAudio(chunk)) {
+                if (liveAvailable && live?.sendAudio(chunk) != true) {
                     liveAvailable = false
                 }
             }
@@ -94,7 +130,7 @@ class GeminiTranscriptionRepository @Inject constructor(
 
             if (liveAvailable) {
                 val liveText = try {
-                    live.finish().trim()
+                    checkNotNull(live).finish().trim()
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Throwable) {
@@ -114,9 +150,124 @@ class GeminiTranscriptionRepository @Inject constructor(
         } catch (error: Throwable) {
             TranscriptionResult.Failure(mapFailure(error))
         } finally {
-            live.close()
+            live?.close()
         }
     }
+
+    override fun releasePrepared() {
+        val (prepared, warmup) = synchronized(preconnectLock) {
+            val currentPrepared = preparedLive
+            val currentWarmup = liveWarmup
+            preparedLive = null
+            liveWarmup = null
+            currentPrepared to currentWarmup
+        }
+        prepared?.connection?.close()
+        warmup?.ready?.complete(false)
+        warmup?.connection?.close()
+    }
+
+    private fun prepareAction(apiKey: String, languageCode: String): PrepareAction =
+        synchronized(preconnectLock) {
+            val prepared = preparedLive
+            if (prepared?.matches(apiKey, languageCode) == true) {
+                return@synchronized PrepareAction.Ready
+            }
+            val warming = liveWarmup
+            if (warming?.matches(apiKey, languageCode) == true) {
+                return@synchronized PrepareAction.Await(warming)
+            }
+
+            preparedLive = null
+            liveWarmup = null
+            val next = LiveWarmup(
+                apiKey = apiKey,
+                languageCode = languageCode,
+                connection = liveConnectionFactory(),
+            )
+            liveWarmup = next
+            PrepareAction.Start(next, prepared, warming)
+        }
+
+    private suspend fun startWarmup(action: PrepareAction.Start): Boolean {
+        action.stalePrepared?.connection?.close()
+        action.staleWarmup?.ready?.complete(false)
+        action.staleWarmup?.connection?.close()
+
+        var connected = false
+        var accepted = false
+        try {
+            action.warmup.connection.connect(
+                action.warmup.apiKey,
+                action.warmup.languageCode,
+            )
+            connected = true
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Throwable) {
+            Unit
+        } finally {
+            accepted = synchronized(preconnectLock) {
+                if (liveWarmup === action.warmup) {
+                    liveWarmup = null
+                    if (connected) {
+                        preparedLive = PreparedLive(
+                            apiKey = action.warmup.apiKey,
+                            languageCode = action.warmup.languageCode,
+                            connection = action.warmup.connection,
+                        )
+                    }
+                    connected
+                } else {
+                    false
+                }
+            }
+            if (!accepted) action.warmup.connection.close()
+            action.warmup.ready.complete(accepted)
+        }
+        return accepted
+    }
+
+    private suspend fun acquirePrepared(
+        apiKey: String,
+        languageCode: String,
+    ): PreparedAcquisition {
+        while (true) {
+            when (val action = acquireAction(apiKey, languageCode)) {
+                is AcquireAction.Take -> return PreparedAcquisition.Ready(action.connection)
+                is AcquireAction.Await -> {
+                    if (!action.warmup.ready.await()) return PreparedAcquisition.WarmupFailed
+                }
+                is AcquireAction.Miss -> {
+                    action.stalePrepared?.connection?.close()
+                    action.staleWarmup?.ready?.complete(false)
+                    action.staleWarmup?.connection?.close()
+                    return PreparedAcquisition.NoWarmup
+                }
+            }
+        }
+    }
+
+    private fun acquireAction(apiKey: String, languageCode: String): AcquireAction =
+        synchronized(preconnectLock) {
+            preparedLive?.let { prepared ->
+                if (prepared.matches(apiKey, languageCode)) {
+                    preparedLive = null
+                    return@synchronized AcquireAction.Take(prepared.connection)
+                }
+            }
+            liveWarmup?.let { warmup ->
+                if (warmup.matches(apiKey, languageCode)) {
+                    return@synchronized AcquireAction.Await(warmup)
+                }
+            }
+
+            val stalePrepared = preparedLive
+            val staleWarmup = liveWarmup
+            preparedLive = null
+            liveWarmup = null
+            AcquireAction.Miss(stalePrepared, staleWarmup)
+        }
 
     private fun batchTranscribe(
         apiKey: String,
@@ -193,5 +344,49 @@ class GeminiTranscriptionRepository @Inject constructor(
             .host("generativelanguage.googleapis.com")
             .addPathSegments("v1beta/interactions")
             .build()
+    }
+
+    private data class PreparedLive(
+        val apiKey: String,
+        val languageCode: String,
+        val connection: LiveTranscriptionConnection,
+    ) {
+        fun matches(candidateKey: String, candidateLanguage: String): Boolean =
+            apiKey == candidateKey && languageCode == candidateLanguage
+    }
+
+    private data class LiveWarmup(
+        val apiKey: String,
+        val languageCode: String,
+        val connection: LiveTranscriptionConnection,
+        val ready: CompletableDeferred<Boolean> = CompletableDeferred(),
+    ) {
+        fun matches(candidateKey: String, candidateLanguage: String): Boolean =
+            apiKey == candidateKey && languageCode == candidateLanguage
+    }
+
+    private sealed interface PrepareAction {
+        data object Ready : PrepareAction
+        data class Await(val warmup: LiveWarmup) : PrepareAction
+        data class Start(
+            val warmup: LiveWarmup,
+            val stalePrepared: PreparedLive?,
+            val staleWarmup: LiveWarmup?,
+        ) : PrepareAction
+    }
+
+    private sealed interface AcquireAction {
+        data class Take(val connection: LiveTranscriptionConnection) : AcquireAction
+        data class Await(val warmup: LiveWarmup) : AcquireAction
+        data class Miss(
+            val stalePrepared: PreparedLive?,
+            val staleWarmup: LiveWarmup?,
+        ) : AcquireAction
+    }
+
+    private sealed interface PreparedAcquisition {
+        data class Ready(val connection: LiveTranscriptionConnection) : PreparedAcquisition
+        data object NoWarmup : PreparedAcquisition
+        data object WarmupFailed : PreparedAcquisition
     }
 }

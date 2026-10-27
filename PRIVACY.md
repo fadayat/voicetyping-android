@@ -13,6 +13,8 @@ VoiceTyping is a client-side Android application. It has no separate application
 
 VoiceTyping does not request Accessibility, display-over-other-apps, notification-listener, contacts, storage, or clipboard access. It does not read the current editor contents. Recording and transcript insertion are blocked in password fields.
 
+When the VoiceTyping keyboard appears in a normal text field, the app may prepare an authenticated Gemini Live connection to reduce delay. No microphone audio is captured or transmitted until the user taps the voice button. Debug builds may write timing values such as connection and response duration to Logcat; these diagnostics contain no audio, transcript text, API key, or editor content.
+
 ## Storage and retention
 
 - The app does not write microphone audio or transcript history to files or a database.

@@ -27,6 +27,8 @@ Avtomatik keçid alınmasa, **Gboard-a qayıt** düyməsinə bas və sistem siya
 
 VoiceTyping parol xanalarında səs yazısını bloklayır. Tətbiq aktiv xananın mövcud mətnini oxumur.
 
+Gecikməni azaltmaq üçün adi mətn xanasında klaviatura görünən kimi Gemini bağlantısı əvvəlcədən hazırlana bilər. **Danış** düyməsinə toxunana qədər mikrofon açılmır və səs göndərilmir.
+
 ## Təhlükəsizlik dəyişikliyi
 
 Version 2-də üzən düymə, “digər tətbiqlərin üzərində göstər” icazəsi və Accessibility xidməti tam silinib. Tətbiq yalnız internet və mikrofon icazəsi istəyir. Hazır mətn Android-in standart klaviatura API-si ilə xanaya yazılır.

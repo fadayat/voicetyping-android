@@ -90,7 +90,7 @@ class PcmAudioSource @Inject constructor(
         private const val SAMPLE_RATE = 16_000
         private const val CHANNEL = AudioFormat.CHANNEL_IN_MONO
         private const val ENCODING = AudioFormat.ENCODING_PCM_16BIT
-        private const val CHUNK_BYTES = 3_200
+        private const val CHUNK_BYTES = 1_600
         private const val MAX_RECORDING_BYTES = SAMPLE_RATE * 2 * 60 * 7
     }
 }

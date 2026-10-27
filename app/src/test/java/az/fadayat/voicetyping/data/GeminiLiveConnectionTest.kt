@@ -68,6 +68,7 @@ class GeminiLiveConnectionTest {
         )
 
         connection.connect("test-key-with-safe-length", "az-AZ")
+        assertTrue(connection.startActivity())
         assertTrue(connection.sendAudio(byteArrayOf(1, 2, 3, 4)))
         assertEquals("Salam dünya", connection.finish())
         connection.close()
@@ -92,6 +93,12 @@ class GeminiLiveConnectionTest {
                 .getBoolean("disabled"),
         )
         assertTrue(messages.any { it.contains("audio/pcm;rate=16000") })
+        assertEquals(
+            1,
+            messages.count {
+                JSONObject(it).optJSONObject("realtime_input")?.has("activityStart") == true
+            },
+        )
         assertTrue(messages.any { JSONObject(it).has("realtime_input") })
         assertFalse(messages.any { it.contains("test-key-with-safe-length") })
         client.dispatcher.executorService.shutdown()
@@ -130,6 +137,7 @@ class GeminiLiveConnectionTest {
         )
 
         connection.connect("test-key-with-safe-length", "az-AZ")
+        assertTrue(connection.startActivity())
         connection.sendAudio(byteArrayOf(1, 2, 3, 4))
 
         assertEquals("Hazır mətn", connection.finish())

@@ -2,6 +2,19 @@
 
 All notable changes are documented here. This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.0.1] - 2026-10-27
+
+### Changed
+
+- Prepared the Gemini Live WebSocket while the voice keyboard is visible.
+- Reduced audio chunks from 100 ms to 50 ms for lower streaming latency.
+- Reduced the post-commit keyboard-switch delay from 450 ms to 100 ms.
+- Added debug-only timing metrics without logging audio, transcripts, or credentials.
+- Prevented a failed in-flight preconnect from opening a duplicate Live connection.
+- Guarded delayed microphone callbacks with an editor and recording-session token.
+
+Live interim transcription remains intentionally disabled.
+
 ## [2.0.0] - 2026-10-27
 
 ### Changed

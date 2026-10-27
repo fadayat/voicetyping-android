@@ -3,11 +3,18 @@ package az.fadayat.voicetyping.domain
 import kotlinx.coroutines.flow.Flow
 
 interface TranscriptionRepository {
+    suspend fun prepare(
+        apiKey: String,
+        languageCode: String = "az-AZ",
+    ): Boolean
+
     suspend fun transcribe(
         apiKey: String,
         pcmChunks: Flow<ByteArray>,
         languageCode: String = "az-AZ",
     ): TranscriptionResult
+
+    fun releasePrepared()
 }
 
 sealed interface TranscriptionResult {

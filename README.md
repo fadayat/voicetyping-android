@@ -20,6 +20,7 @@ Gboard remains installed and enabled. VoiceTyping switches back to the previous 
 - Uses the standard Android `InputMethodService` contract.
 - Requests only internet and microphone permissions.
 - Streams 16 kHz mono PCM audio to Gemini Live while recording.
+- Prepares the Live connection while the keyboard is visible and sends 50 ms audio chunks.
 - Queues audio captured during connection setup so the beginning is not lost.
 - Falls back to the Gemini batch transcription API when the live route fails.
 - Inserts the final transcript directly through `InputConnection`.
@@ -27,6 +28,7 @@ Gboard remains installed and enabled. VoiceTyping switches back to the previous 
 - Stores the user's API key with AES-GCM backed by Android Keystore.
 - Does not save audio, transcripts, or editor contents.
 - Uses bounded connection, finalization, network, and processing timeouts.
+- Records timing-only diagnostics in debug builds without logging audio or transcript content.
 
 ## How it works
 

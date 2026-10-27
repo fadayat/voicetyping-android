@@ -19,6 +19,7 @@ import org.json.JSONObject
 
 internal interface LiveTranscriptionConnection : Closeable {
     suspend fun connect(apiKey: String, languageCode: String)
+    fun startActivity(): Boolean
     fun sendAudio(pcm: ByteArray): Boolean
     suspend fun finish(): String
 }
@@ -52,9 +53,11 @@ internal class GeminiLiveConnection(
                 failed.onAwait { throw it }
             }
         } ?: throw SocketTimeoutException("Live setup timed out")
-        check(send(realtimeMessage("activityStart", JSONObject()))) {
-            "Could not start Live activity"
-        }
+    }
+
+    override fun startActivity(): Boolean {
+        activityEnded.set(false)
+        return send(realtimeMessage("activityStart", JSONObject()))
     }
 
     override fun sendAudio(pcm: ByteArray): Boolean {
