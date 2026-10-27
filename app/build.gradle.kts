@@ -14,8 +14,8 @@ android {
         applicationId = "az.fadayat.voicetyping"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.0.4"
+        versionCode = 6
+        versionName = "2.0.0"
 
         testInstrumentationRunner = "az.fadayat.voicetyping.HiltTestRunner"
         vectorDrawables.useSupportLibrary = true
@@ -66,8 +66,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-service:2.8.7")
-
     implementation(platform("androidx.compose:compose-bom:2024.10.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")

@@ -17,7 +17,7 @@ class VoiceTypingScreenTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun startButtonDisabledUntilSetupIsComplete() {
+    fun keyboardButtonDisabledUntilSetupIsComplete() {
         composeRule.setContent {
             VoiceTypingTheme {
                 VoiceTypingScreen(
@@ -26,40 +26,39 @@ class VoiceTypingScreenTest {
                     onSaveApiKey = {},
                     onClearApiKey = {},
                     onRequestMicrophone = {},
-                    onRequestOverlay = {},
-                    onRequestAccessibility = {},
-                    onToggleService = {},
+                    onOpenKeyboardSettings = {},
+                    onChooseKeyboard = {},
                 )
             }
         }
 
-        composeRule.onNodeWithText("Gboard qalır. Üzən düyməyə toxun, danış və mətni aktiv xanaya yerləşdir.")
+        composeRule.onNodeWithText(
+            "Gboard silinmir. Səsli yazarkən VoiceTyping klaviaturasına keç; mətn yazıldıqdan sonra Gboard-a qayıt.",
+        )
             .assertIsDisplayed()
-        composeRule.onNodeWithText("Üzən düyməni başlat").assertIsNotEnabled()
+        composeRule.onNodeWithText("VoiceTyping klaviaturasını seç").assertIsNotEnabled()
     }
 
     @Test
-    fun startButtonEnabledWhenSetupIsComplete() {
+    fun keyboardButtonEnabledWhenSetupIsComplete() {
         composeRule.setContent {
             VoiceTypingTheme {
                 VoiceTypingScreen(
                     state = MainUiState(
                         hasApiKey = true,
                         hasMicrophonePermission = true,
-                        hasOverlayPermission = true,
-                        hasAccessibilityService = true,
+                        isImeEnabled = true,
                     ),
                     snackbarHostState = remember { SnackbarHostState() },
                     onSaveApiKey = {},
                     onClearApiKey = {},
                     onRequestMicrophone = {},
-                    onRequestOverlay = {},
-                    onRequestAccessibility = {},
-                    onToggleService = {},
+                    onOpenKeyboardSettings = {},
+                    onChooseKeyboard = {},
                 )
             }
         }
 
-        composeRule.onNodeWithText("Üzən düyməni başlat").assertIsEnabled()
+        composeRule.onNodeWithText("VoiceTyping klaviaturasını seç").assertIsEnabled()
     }
 }

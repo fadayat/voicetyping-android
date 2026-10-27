@@ -1,16 +1,11 @@
 <resources>
     <string name="app_name">VoiceTyping</string>
-    <string name="accessibility_service_name">VoiceTyping mətn yerləşdirmə xidməti</string>
-    <string name="accessibility_service_description">Yalnız VoiceTyping tərəfindən hazırlanmış mətni aktiv xanaya yerləşdirir. Daxil etdiyiniz mətni oxumur və saxlamır.</string>
-    <string name="notification_channel_name">VoiceTyping xidməti</string>
-    <string name="notification_channel_description">Üzən səsli yazı düyməsinin vəziyyəti</string>
-    <string name="notification_idle">Üzən düymə hazırdır</string>
-    <string name="notification_recording">Səs yazılır</string>
-    <string name="notification_processing">Mətn hazırlanır</string>
-    <string name="notification_copied">Mətn clipboard-a kopyalandı</string>
-    <string name="notification_error">VoiceTyping xətası</string>
-    <string name="orb_start">Səsli yazmanı başlat</string>
-    <string name="orb_stop">Səsli yazmanı dayandır</string>
-    <string name="orb_processing">Mətn hazırlanır</string>
-    <string name="orb_dismiss_target">VoiceTyping-i bağla</string>
+    <string name="ime_name">VoiceTyping səsli klaviatura</string>
+    <string name="ime_subtype_az">Azərbaycan dili</string>
+    <string name="ime_ready">Danışmaq üçün toxun</string>
+    <string name="ime_connecting">Gemini-yə qoşulur</string>
+    <string name="ime_recording">Səs yazılır — dayandırmaq üçün toxun</string>
+    <string name="ime_processing">Mətn hazırlanır</string>
+    <string name="ime_switch_back">Gboard-a qayıt</string>
+    <string name="ime_settings">Ayarlar</string>
 </resources>

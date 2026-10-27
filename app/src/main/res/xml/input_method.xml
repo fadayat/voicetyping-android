@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="az.fadayat.voicetyping.MainActivity"
+    android:supportsSwitchingToNextInputMethod="true">
+    <subtype
+        android:imeSubtypeLocale="az_AZ"
+        android:imeSubtypeMode="keyboard"
+        android:label="@string/ime_subtype_az" />
+</input-method>

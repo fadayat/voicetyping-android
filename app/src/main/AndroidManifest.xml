@@ -3,10 +3,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
         android:name=".VoiceTypingApplication"
@@ -29,21 +25,16 @@
         </activity>
 
         <service
-            android:name=".service.VoiceOverlayService"
-            android:exported="false"
-            android:foregroundServiceType="microphone" />
-
-        <service
-            android:name=".service.VoiceAccessibilityService"
+            android:name=".service.VoiceInputMethodService"
             android:exported="true"
-            android:label="@string/accessibility_service_name"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            android:label="@string/ime_name"
+            android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
+                <action android:name="android.view.InputMethod" />
             </intent-filter>
             <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
+                android:name="android.view.im"
+                android:resource="@xml/input_method" />
         </service>
     </application>
 

@@ -2,13 +2,12 @@ package az.fadayat.voicetyping
 
 import android.Manifest
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -54,11 +53,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import az.fadayat.voicetyping.domain.VoiceStatus
 import az.fadayat.voicetyping.ui.MainUiEvent
 import az.fadayat.voicetyping.ui.MainUiState
 import az.fadayat.voicetyping.ui.MainViewModel
@@ -76,8 +75,8 @@ class MainActivity : ComponentActivity() {
             VoiceTypingTheme {
                 val state by viewModel.uiState.collectAsStateWithLifecycle()
                 val snackbarHostState = remember { SnackbarHostState() }
-                val permissionsLauncher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.RequestMultiplePermissions(),
+                val microphoneLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestPermission(),
                 ) { viewModel.refresh() }
 
                 LaunchedEffect(Unit) {
@@ -94,24 +93,14 @@ class MainActivity : ComponentActivity() {
                     onSaveApiKey = viewModel::saveApiKey,
                     onClearApiKey = viewModel::clearApiKey,
                     onRequestMicrophone = {
-                        val permissions = buildList {
-                            add(Manifest.permission.RECORD_AUDIO)
-                            if (Build.VERSION.SDK_INT >= 33) add(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                        permissionsLauncher.launch(permissions.toTypedArray())
+                        microphoneLauncher.launch(Manifest.permission.RECORD_AUDIO)
                     },
-                    onRequestOverlay = {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName"),
-                            ),
-                        )
+                    onOpenKeyboardSettings = {
+                        startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
                     },
-                    onRequestAccessibility = {
-                        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    onChooseKeyboard = {
+                        getSystemService(InputMethodManager::class.java).showInputMethodPicker()
                     },
-                    onToggleService = viewModel::toggleService,
                 )
             }
         }
@@ -131,9 +120,8 @@ fun VoiceTypingScreen(
     onSaveApiKey: (String) -> Unit,
     onClearApiKey: () -> Unit,
     onRequestMicrophone: () -> Unit,
-    onRequestOverlay: () -> Unit,
-    onRequestAccessibility: () -> Unit,
-    onToggleService: () -> Unit,
+    onOpenKeyboardSettings: () -> Unit,
+    onChooseKeyboard: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var apiKey by rememberSaveable { mutableStateOf("") }
@@ -159,7 +147,7 @@ fun VoiceTypingScreen(
                 modifier = Modifier.semantics { heading() },
             )
             Text(
-                text = "Gboard qalır. Üzən düyməyə toxun, danış və mətni aktiv xanaya yerləşdir.",
+                text = "Gboard silinmir. Səsli yazarkən VoiceTyping klaviaturasına keç; mətn yazıldıqdan sonra Gboard-a qayıt.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -177,6 +165,9 @@ fun VoiceTypingScreen(
                         label = { Text("Gemini API açarı") },
                         supportingText = { Text("Açar yalnız bu cihazda Android Keystore ilə qorunur.") },
                         visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                        ),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -192,39 +183,43 @@ fun VoiceTypingScreen(
                 }
             }
 
-            SectionCard(title = "2. İcazələr") {
-                PermissionRow(
+            SectionCard(title = "2. Telefon hazırlığı") {
+                SetupRow(
                     title = "Mikrofon",
-                    explanation = "Səsi yalnız düyməyə toxunduqdan sonra yazır.",
-                    granted = state.hasMicrophonePermission,
+                    explanation = "Səs yalnız klaviaturadakı düyməyə toxunduqda yazılır.",
+                    ready = state.hasMicrophonePermission,
+                    actionLabel = "İcazə ver",
                     onClick = onRequestMicrophone,
                 )
-                PermissionRow(
-                    title = "Üzən düymə",
-                    explanation = "VoiceTyping düyməsini digər tətbiqlərin üzərində göstərir.",
-                    granted = state.hasOverlayPermission,
-                    onClick = onRequestOverlay,
+                SetupRow(
+                    title = "VoiceTyping klaviaturası",
+                    explanation = "Android ayarlarında VoiceTyping-i aktiv et. Gboard aktiv qalır.",
+                    ready = state.isImeEnabled,
+                    actionLabel = "Ayarlara keç",
+                    onClick = onOpenKeyboardSettings,
                 )
-                PermissionRow(
-                    title = "Mətn yerləşdirmə",
-                    explanation = "Hazır mətni aktiv xanaya yapışdırır; xana mətnini saxlamır.",
-                    granted = state.hasAccessibilityService,
-                    onClick = onRequestAccessibility,
+                SetupRow(
+                    title = "Aktiv klaviatura",
+                    explanation = "Yazı sahəsində VoiceTyping-i seç. Sonra avtomatik geri qayıda bilərsən.",
+                    ready = state.isImeSelected,
+                    actionLabel = "Seç",
+                    onClick = onChooseKeyboard,
+                    actionEnabled = state.canChooseKeyboard,
                 )
             }
 
             Button(
-                onClick = onToggleService,
-                enabled = state.isServiceRunning || state.isReady,
+                onClick = onChooseKeyboard,
+                enabled = state.canChooseKeyboard,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
             ) {
-                Text(if (state.isServiceRunning) "Üzən düyməni dayandır" else "Üzən düyməni başlat")
+                Text(if (state.isImeSelected) "Klaviaturanı dəyiş" else "VoiceTyping klaviaturasını seç")
             }
 
             Text(
-                text = "Səs transkripsiya üçün Gemini xidmətinə göndərilir. Parol xanalarına avtomatik mətn yerləşdirilmir.",
+                text = "VoiceTyping overlay və Accessibility icazəsi istəmir. Səs transkripsiya üçün Gemini xidmətinə göndərilir. Parol xanalarında səs yazısı bloklanır.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -235,12 +230,8 @@ fun VoiceTypingScreen(
 @Composable
 private fun StatusCard(state: MainUiState, modifier: Modifier = Modifier) {
     val (title, subtitle) = when {
-        state.isServiceRunning && state.voiceStatus.phase == VoiceStatus.Phase.RECORDING ->
-            "Səs yazılır" to "Dayandırmaq üçün üzən düyməyə toxun."
-        state.isServiceRunning && state.voiceStatus.phase == VoiceStatus.Phase.PROCESSING ->
-            "Mətn hazırlanır" to "Nəticə aktiv xanaya yerləşdiriləcək."
-        state.isServiceRunning -> "Hazırdır" to (state.voiceStatus.message ?: "Üzən düymə aktivdir.")
-        state.isReady -> "Quraşdırma tamamdır" to "Üzən düyməni başlada bilərsən."
+        state.isReady -> "Hazırdır" to "İstənilən yazı sahəsində VoiceTyping ilə danışa bilərsən."
+        state.canChooseKeyboard -> "Klaviaturanı seç" to "Aşağıdakı düymədən VoiceTyping-i aktiv klaviatura et."
         else -> "Hazırlıq lazımdır" to "Aşağıdakı addımları tamamla."
     }
     Card(
@@ -282,12 +273,14 @@ private fun SectionCard(
 }
 
 @Composable
-private fun PermissionRow(
+private fun SetupRow(
     title: String,
     explanation: String,
-    granted: Boolean,
+    ready: Boolean,
+    actionLabel: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    actionEnabled: Boolean = true,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -297,7 +290,7 @@ private fun PermissionRow(
         Surface(
             modifier = Modifier.size(12.dp),
             shape = CircleShape,
-            color = if (granted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            color = if (ready) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
             content = {},
         )
         Column(Modifier.weight(1f)) {
@@ -308,8 +301,8 @@ private fun PermissionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        OutlinedButton(onClick = onClick, enabled = !granted) {
-            Text(if (granted) "Hazırdır" else "Aç")
+        OutlinedButton(onClick = onClick, enabled = !ready && actionEnabled) {
+            Text(if (ready) "Hazırdır" else actionLabel)
         }
     }
 }
@@ -324,9 +317,8 @@ private fun VoiceTypingScreenPreview() {
             onSaveApiKey = {},
             onClearApiKey = {},
             onRequestMicrophone = {},
-            onRequestOverlay = {},
-            onRequestAccessibility = {},
-            onToggleService = {},
+            onOpenKeyboardSettings = {},
+            onChooseKeyboard = {},
         )
     }
 }

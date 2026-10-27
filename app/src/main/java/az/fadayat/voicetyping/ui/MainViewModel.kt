@@ -3,17 +3,15 @@ package az.fadayat.voicetyping.ui
 import android.Manifest
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
+import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import az.fadayat.voicetyping.data.SecureApiKeyStore
 import az.fadayat.voicetyping.di.IoDispatcher
-import az.fadayat.voicetyping.domain.VoiceStatusStore
-import az.fadayat.voicetyping.service.VoiceAccessibilityService
-import az.fadayat.voicetyping.service.VoiceOverlayService
+import az.fadayat.voicetyping.service.VoiceInputMethodService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -32,7 +30,6 @@ import kotlinx.coroutines.withContext
 class MainViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val apiKeyStore: SecureApiKeyStore,
-    private val statusStore: VoiceStatusStore,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(MainUiState())
@@ -42,20 +39,17 @@ class MainViewModel @Inject constructor(
     val events: SharedFlow<MainUiEvent> = mutableEvents.asSharedFlow()
 
     init {
-        viewModelScope.launch {
-            statusStore.status.collect { status ->
-                mutableUiState.update {
-                    it.copy(
-                        voiceStatus = status,
-                        isServiceRunning = VoiceOverlayService.running.get(),
-                    )
-                }
-            }
-        }
         refresh()
     }
 
     fun refresh() {
+        val expected = ComponentName(context, VoiceInputMethodService::class.java)
+        val inputMethodManager = context.getSystemService(InputMethodManager::class.java)
+        val selected = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.DEFAULT_INPUT_METHOD,
+        )?.let(ComponentName::unflattenFromString)
+
         mutableUiState.update {
             it.copy(
                 hasApiKey = apiKeyStore.hasKey(),
@@ -63,9 +57,10 @@ class MainViewModel @Inject constructor(
                     context,
                     Manifest.permission.RECORD_AUDIO,
                 ) == PackageManager.PERMISSION_GRANTED,
-                hasOverlayPermission = Settings.canDrawOverlays(context),
-                hasAccessibilityService = isAccessibilityEnabled(),
-                isServiceRunning = VoiceOverlayService.running.get(),
+                isImeEnabled = inputMethodManager.enabledInputMethodList.any { info ->
+                    ComponentName(info.packageName, info.serviceName) == expected
+                },
+                isImeSelected = selected == expected,
             )
         }
     }
@@ -92,28 +87,4 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun toggleService() {
-        refresh()
-        val state = mutableUiState.value
-        if (state.isServiceRunning) {
-            context.stopService(Intent(context, VoiceOverlayService::class.java))
-            mutableUiState.update { it.copy(isServiceRunning = false) }
-            return
-        }
-        if (!state.isReady) {
-            mutableEvents.tryEmit(MainUiEvent.Message("Əvvəl bütün hazırlıq addımlarını tamamlayın"))
-            return
-        }
-        ContextCompat.startForegroundService(context, Intent(context, VoiceOverlayService::class.java))
-        mutableUiState.update { it.copy(isServiceRunning = true) }
-    }
-
-    private fun isAccessibilityEnabled(): Boolean {
-        val expected = ComponentName(context, VoiceAccessibilityService::class.java).flattenToString()
-        val enabled = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
-        ).orEmpty()
-        return enabled.split(':').any { it.equals(expected, ignoreCase = true) }
-    }
 }

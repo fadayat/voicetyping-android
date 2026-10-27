@@ -1,17 +1,16 @@
 package az.fadayat.voicetyping.ui
 
-import az.fadayat.voicetyping.domain.VoiceStatus
-
 data class MainUiState(
     val hasApiKey: Boolean = false,
     val hasMicrophonePermission: Boolean = false,
-    val hasOverlayPermission: Boolean = false,
-    val hasAccessibilityService: Boolean = false,
-    val isServiceRunning: Boolean = false,
-    val voiceStatus: VoiceStatus = VoiceStatus(),
+    val isImeEnabled: Boolean = false,
+    val isImeSelected: Boolean = false,
 ) {
+    val canChooseKeyboard: Boolean
+        get() = hasApiKey && hasMicrophonePermission && isImeEnabled
+
     val isReady: Boolean
-        get() = hasApiKey && hasMicrophonePermission && hasOverlayPermission && hasAccessibilityService
+        get() = canChooseKeyboard && isImeSelected
 }
 
 sealed interface MainUiEvent {

@@ -31,6 +31,10 @@ object PlatformModule {
     fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     @Provides
+    @MainDispatcher
+    fun provideMainDispatcher(): CoroutineDispatcher = Dispatchers.Main.immediate
+
+    @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)

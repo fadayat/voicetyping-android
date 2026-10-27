@@ -5,73 +5,72 @@
 [![Android CI](https://github.com/fadayat/voicetyping-android/actions/workflows/android.yml/badge.svg)](https://github.com/fadayat/voicetyping-android/actions/workflows/android.yml)
 [![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-VoiceTyping is a floating, system-wide voice typing tool for Android. Tap the movable orb, speak Azerbaijani, and receive the transcript in the currently focused text field without replacing your keyboard.
+VoiceTyping is an Azerbaijani voice input method for Android. Select it temporarily as the active keyboard, dictate text, and return to Gboard after the transcript is inserted.
 
 [Azərbaycan dilində quraşdırma təlimatı](docs/README.az.md)
 
-## Screenshots
+## Why an input method
 
-<p align="center">
-  <img src="docs/images/setup-screen.png" width="30%" alt="VoiceTyping setup screen">
-  <img src="docs/images/floating-orb.png" width="30%" alt="VoiceTyping floating microphone orb">
-  <img src="docs/images/drag-to-close.png" width="30%" alt="VoiceTyping drag-to-close target">
-</p>
+Version 2 replaces the floating overlay and Accessibility service with Android's standard input-method API. VoiceTyping no longer requests permission to draw over other apps or control the screen. It sends the result directly to the active editor through `InputConnection.commitText` and never reads existing editor content.
+
+Gboard remains installed and enabled. VoiceTyping switches back to the previous keyboard after a successful transcription. If Android cannot identify the previous keyboard, it opens the system keyboard picker.
 
 ## Highlights
 
-- Keeps Gboard or any other keyboard as the active keyboard.
+- Uses the standard Android `InputMethodService` contract.
+- Requests only internet and microphone permissions.
 - Streams 16 kHz mono PCM audio to Gemini Live while recording.
-- Queues audio captured during connection setup, so the beginning is not lost.
+- Queues audio captured during connection setup so the beginning is not lost.
 - Falls back to the Gemini batch transcription API when the live route fails.
-- Pastes the final transcript through a narrowly scoped accessibility service.
-- Never auto-pastes into password fields.
-- Copies the transcript to the clipboard when direct paste is unavailable.
+- Inserts the final transcript directly through `InputConnection`.
+- Blocks recording and insertion in password fields.
 - Stores the user's API key with AES-GCM backed by Android Keystore.
-- Does not save audio or transcript history.
-- Lets the user drag the floating orb onto a bottom close target to stop the service.
-- Uses explicit connection, finalization, network, and processing timeouts to prevent an indefinite “preparing text” state.
+- Does not save audio, transcripts, or editor contents.
+- Uses bounded connection, finalization, network, and processing timeouts.
 
 ## How it works
 
 ```text
-Tap orb
+Select VoiceTyping keyboard
    |
-   +-- start microphone capture
-   +-- open Gemini Live connection in parallel
+   +-- tap Speak
+   +-- capture microphone audio and open Gemini Live
               |
-              +-- stream queued and new PCM chunks
-              |
-          Tap orb again
+          tap Stop
               |
               +-- finalize live transcript
               +-- use batch fallback if needed
               |
-        clipboard + safe accessibility paste
+        InputConnection.commitText
+              |
+        return to previous keyboard
 ```
 
 Audio remains in memory only for the active session. The in-memory copy supports validation and the batch fallback; it is discarded when the session ends.
 
 ## Install and use
 
-1. Download the debug APK from the latest [GitHub Release](../../releases/latest).
-2. Allow installation from the browser or file manager that opened the APK.
-3. Open VoiceTyping and enter your own Gemini API key.
-4. Grant microphone and “display over other apps” permissions.
-5. Enable **VoiceTyping mətn yerləşdirmə xidməti** in Android Accessibility settings.
-6. Tap **Üzən düyməni başlat**.
-7. Focus any normal text field, tap the floating orb, speak, then tap the orb again.
+1. Install the APK and open VoiceTyping.
+2. Enter your own Gemini API key.
+3. Grant microphone permission.
+4. Open Android's keyboard settings and enable **VoiceTyping səsli klaviatura**. Keep Gboard enabled.
+5. Focus a normal text field and select VoiceTyping from Android's keyboard picker.
+6. Tap **Danış**, speak, then tap **Dayandır**.
+7. VoiceTyping inserts the transcript and returns to the previous keyboard.
 
-To stop VoiceTyping, drag the orb onto the large **X** target at the bottom of the screen. You can also use the stop action in the app or notification.
+VoiceTyping is disabled in password fields.
 
 > [!IMPORTANT]
 > VoiceTyping sends recorded speech to Google's Gemini API for transcription. You supply the API key and are responsible for the associated account, quota, terms, and charges.
+
+The current evaluation APK uses Android's debug signing key and is sideloaded. Source changes remove overlay and Accessibility risk signals, but no APK can guarantee acceptance by every bank app or a clean Google Play Protect verdict. Production trust requires a stable release key and an appropriate verified distribution channel. Do not disable Play Protect to install this app.
 
 ## Build from source
 
 Requirements:
 
 - Android Studio or Android SDK 34
-- JDK 17 or 21 (JDK 25 is not supported by the current Android Gradle Plugin)
+- JDK 17 or 21
 - Internet access for Gradle dependencies
 
 ```bash
@@ -80,59 +79,37 @@ cd voicetyping-android
 ./gradlew testDebugUnitTest lintDebug assembleDebug
 ```
 
-The debug APK is generated at `app/build/outputs/apk/debug/app-debug.apk`.
-
-No Gemini API key is required to compile or run the automated test suite. Do not place an API key in source code, Gradle files, `local.properties`, or a GitHub issue.
+The debug APK is generated at `app/build/outputs/apk/debug/app-debug.apk`. No Gemini API key is required for compilation or automated tests.
 
 ## Architecture
 
-- **UI:** Jetpack Compose and Material 3
-- **State:** `StateFlow` and lifecycle-aware collection
-- **Concurrency:** Kotlin Coroutines and Flow
+- **Setup UI:** Jetpack Compose and Material 3
+- **Voice keyboard:** Android `InputMethodService`
+- **Text delivery:** `InputConnection.commitText`
+- **State and concurrency:** `StateFlow`, Kotlin Coroutines, and Flow
 - **Dependency injection:** Hilt
 - **Networking:** OkHttp WebSocket and HTTP
 - **Audio:** Android `AudioRecord`, 16 kHz mono PCM
 - **Credential storage:** Android Keystore with AES-GCM
-- **Delivery:** Android clipboard plus a restricted accessibility paste action
 
-The main transcription contract lives in the domain layer. The data layer owns Gemini Live, batch fallback, audio validation, and WAV encoding. The foreground service owns the floating control and session lifecycle.
-
-## Verification
-
-The project includes unit tests for message parsing, live and fallback routing, audio validation, WAV encoding, and dismiss-target geometry. Instrumented Compose tests cover the setup screen and permission state.
-
-The v1.0.4 development build passed:
-
-- 17 local unit tests
-- Android lint
-- Debug APK assembly
-- 2 instrumented tests on an Android 14 emulator
-
-A controlled end-to-end run with 5.28 seconds of synthetic Azerbaijani speech completed through the live route in 5.998 seconds total. The final transcript arrived 731 ms after recording stopped. Network and service conditions vary, so these figures are not a general latency guarantee.
+The domain layer defines the transcription contract. The data layer owns Gemini Live, batch fallback, audio validation, and WAV encoding. The input-method service owns recording and editor insertion.
 
 ## Privacy and security
 
-Read [PRIVACY.md](PRIVACY.md) before use. Key points:
-
-- Recording starts only after the user taps the orb.
-- Audio and API requests go directly from the device to Google's Gemini service.
-- VoiceTyping does not operate a separate backend.
-- API keys are encrypted on-device and excluded from the repository and APK.
-- The accessibility service does not subscribe to or store typed field content.
-- Password fields are excluded from automatic paste.
+Read [PRIVACY.md](PRIVACY.md) before use. VoiceTyping does not use an Accessibility service, overlay, notification listener, or clipboard. It never requests or stores current field contents. Audio and API requests go directly from the device to Google's Gemini service.
 
 For vulnerability reports, follow [SECURITY.md](SECURITY.md). Never include credentials or private recordings in a public issue.
 
 ## Current scope
 
-- The interface and transcription configuration currently target Azerbaijani (`az-AZ`).
-- The distributed APK is a debug build intended for sideloading and evaluation.
-- Google Play distribution would require additional signing, store declarations, accessibility-policy review, and release hardening.
-- The app depends on preview or evolving Gemini transcription endpoints. API availability and model names can change.
+- The interface and transcription configuration target Azerbaijani (`az-AZ`).
+- The local APK is a debug build intended for evaluation.
+- Production distribution still needs release signing and store/developer verification.
+- Gemini transcription endpoints and model names may change.
 
 ## Contributing
 
-Bug reports and focused pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Planned improvements are tracked in [GitHub Issues](../../issues).
+Bug reports and focused pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
 ## License
 

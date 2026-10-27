@@ -2,6 +2,27 @@
 
 All notable changes are documented here. This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.0.0] - 2026-10-27
+
+### Changed
+
+- Replaced the floating overlay and Accessibility service with a standard Android input method.
+- Inserted transcripts directly through `InputConnection.commitText`.
+- Returned to the previous keyboard after successful transcription.
+- Reduced declared app permissions to internet and microphone.
+- Updated setup UI and documentation for the keyboard-based flow.
+
+### Removed
+
+- Display-over-other-apps permission and floating overlay service.
+- Accessibility permission and paste service.
+- Foreground microphone service, notification permission, and clipboard fallback.
+
+### Security
+
+- Blocked voice recording and transcript insertion in password fields.
+- Removed screen-control and overlay capabilities that sensitive apps can treat as app-access risks.
+
 ## [1.0.4] - 2026-10-26
 
 ### Added

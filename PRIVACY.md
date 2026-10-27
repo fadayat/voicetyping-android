@@ -1,39 +1,40 @@
 # Privacy
 
-Last updated: 26 October 2026
+Last updated: 27 October 2026
 
-VoiceTyping is a client-side Android application. It does not operate a separate application backend, create user accounts, show advertising, or include analytics SDKs.
+VoiceTyping is a client-side Android application. It has no separate application backend, user accounts, advertising, or analytics SDKs.
 
 ## Data handled by the app
 
-- **Microphone audio:** Captured only after the user taps the floating orb. The app sends audio to Google's Gemini API for transcription.
-- **Transcript:** Received from Gemini, copied to the Android clipboard, and optionally pasted into the focused editable field.
-- **Gemini API key:** Supplied by the user. The app encrypts it with AES-GCM using a non-exportable key stored in Android Keystore.
-- **Permission state:** Android provides the current microphone, overlay, notification, and accessibility permission state.
+- **Microphone audio:** Captured only after the user taps the voice button. The app sends audio to Google's Gemini API for transcription.
+- **Transcript:** Received from Gemini and inserted into the active editor through Android's standard `InputConnection` API.
+- **Gemini API key:** Supplied by the user and encrypted with AES-GCM using a non-exportable Android Keystore key.
+- **Permission state:** Android provides the current microphone and input-method state.
+
+VoiceTyping does not request Accessibility, display-over-other-apps, notification-listener, contacts, storage, or clipboard access. It does not read the current editor contents. Recording and transcript insertion are blocked in password fields.
 
 ## Storage and retention
 
 - The app does not write microphone audio or transcript history to files or a database.
-- Audio is kept in memory only for the active transcription session. This allows audio validation and a batch fallback if the live route fails.
-- Android manages clipboard retention. Other apps or the operating system may access clipboard content according to Android's security model.
+- Audio remains in memory only for the active transcription session. This supports audio validation and a batch fallback if the live route fails.
 - The encrypted API key remains on the device until the user clears it or uninstalls the app.
 
 ## Network services
 
-Audio, the API key, and request metadata are transmitted directly from the device to Google's Gemini API over TLS. Google's terms and privacy practices apply to that processing. Users should not dictate information they are not authorized to send to the service.
+Audio, the API key, and request metadata are transmitted directly from the device to Google's Gemini API over TLS. Google's terms and privacy practices apply. Users should not dictate information they are not authorized to send to the service.
 
-## Accessibility service
+## Input-method access
 
-The accessibility service is used only to find the currently focused editable field and invoke Android's standard paste action after VoiceTyping produces a transcript. It does not subscribe to accessibility events, log field contents, or paste into fields Android marks as passwords.
+Android gives an active keyboard an `InputConnection` for the focused editor. VoiceTyping uses that connection only to insert the completed transcript. It does not call APIs that retrieve existing text. Android may hide or restrict the input method in protected fields, and VoiceTyping independently blocks fields marked as passwords.
 
 ## Backups
 
-Android backup is disabled for the application. The project also declares data-extraction rules that exclude application data from cloud backup and device transfer.
+Android backup is disabled. Data-extraction rules also exclude application data from cloud backup and device transfer.
 
 ## User controls
 
-The user can stop recording with the orb, stop the foreground service, revoke any permission in Android settings, clear the API key in the app, or uninstall the app.
+The user can stop recording, switch back to another keyboard, revoke microphone permission, disable the input method, clear the API key, or uninstall the app.
 
 ## Public project notice
 
-This document describes the behavior of the open-source code in this repository. Modified builds may behave differently. Review the source and build provenance before installing third-party APKs.
+This document describes the open-source code in this repository. Modified builds may behave differently. Review source and build provenance before installing third-party APKs.
