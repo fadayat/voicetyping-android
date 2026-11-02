@@ -9,6 +9,10 @@ VoiceTyping is an Azerbaijani voice input method for Android. Select it temporar
 
 [Azərbaycan dilində quraşdırma təlimatı](docs/README.az.md)
 
+<p align="center">
+  <img src="docs/images/voice-keyboard.png" alt="VoiceTyping setup screen and Azerbaijani voice keyboard on Android" width="320">
+</p>
+
 ## Download
 
 [Download the latest Android beta](https://github.com/fadayat/voicetyping-android/releases/latest). The current release is v2.0.2, a debug-signed APK for sideloading and evaluation.
